@@ -1,0 +1,212 @@
+##Actividad 1
+rm(list=ls())
+datos <- read.table("ejercicio1.txt",head=TRUE)
+head(datos)
+
+
+#1. Mostrar las 10 últimas observaciones.
+tail(datos,n=10)
+
+#2 ¿Cuál es la estructura de los datos? Indicar dimensión y tipo de variables
+str(datos) # todo
+summary(datos) # tipos de variable 
+dim(datos) # dimensión
+class(datos) # clase de dato que tratamos
+
+#3 Calcular la media de las variables univariantes, esto es, de cada columna (en
+# aquellas que se pueda).
+
+colMeans(datos[,2:4],na.rm = TRUE)
+
+#4 Crear un nuevo data frame formado únicamente por los alumnos suspensos. ¿Qué
+# dimensión tiene? Guardarlo y exportarlo en formato .txt o .csv
+
+suspensos <- datos[which(datos $Calificacion=="Suspenso"),]
+dim(suspensos)
+write.table(suspensos,file="suspensos.txt")
+write.csv(suspensos,file="suspensos.csv")
+write.csv2(suspensos,file="suspensos.csv")
+
+#5 Para el dataset completo obtener el valor más frecuente, o moda de cada
+# distribución, para las variables 'Edad', 'Estatura' y 'Nota'. ¿Hay alguna 
+# bimodal?
+
+# EDAD #
+
+table(datos$Edad)
+library(modeest)
+mfv(datos$Edad)
+moda_Edad <- as.numeric(names(table(datos$Edad)==max(table(datos$Edad))))
+moda_Edad
+
+# ESTATURA #
+
+datos <- datos[!is.na(datos$Estatura),]
+moda_Estatura <- as.numeric(names(table(datos$Estatura)==max(table(datos$Estatura))))
+moda_Estatura
+
+# NOTA #
+
+moda_Nota <- as.numeric(names(table(datos$Nota)==max(table(datos$Nota))))
+moda_Nota
+
+#6 Reordenar el data frame en función de la variable 'Nota', de menor a mayor, y
+# mostrar las seis primeras filas. 
+
+datos <- datos[with(datos,order(datos$Nota)),]
+head(datos)
+
+#7 Realizar una tabla de frecuencias absolutas y otra de frecuencias relativas 
+# para la variable 'Calificación'. Almacenar las tablas anteriores en dos 
+# variables llamadas 'absolutas' y 'relativas'.
+
+# ABSOLUTAS #
+
+absolutas <- table(datos$Calificacion)
+absolutas
+
+# RELATIVAS #
+
+relativas <- prop.table(absolutas)
+relativas
+
+#8 Representar la variable 'Calificación' mediante un diagrama de barras y un
+# diagrama de sectores. Incluir un título adecuado para cada gráfico y colorear 
+# las barras y los sectores de colores diferentes.
+
+# DIAGRAMA DE BARRAS #
+
+barplot(absolutas,col=c("red","blue","yellow","green"),main = "Diagrama de barras")
+
+# DIAGRAMA DE SECTORES #
+
+pie(absolutas,col=c("red","blue","yellow","green"),main="Diagrama de sectores")
+
+#9 Para la variable 'Edad', realizar un histograma y un diagrama de caja 
+# considerandola opción range = 1.5. Incluir un título apropiado para cada 
+# gráfico. ¿Existe algún valor atípico en esta variable? Reduce el valor del 
+# argumento range hasta 0.5. ¿Aparece algún atípico? ¿A qué observación 
+# corresponde?
+
+hist(datos$Edad,main = "Histograma para la variable edad",xlab="")
+
+#10 Realizar un resumen de la variable 'Nota' con el comando summary. Comprobar
+# que las medidas que proporciona summary coinciden con las medidas calculadas
+# de forma individual usando su función específica.
+
+summary(datos$Nota)
+
+# MINIMO #
+
+min(datos$Nota)
+
+# MAXIMO #
+
+max(datos$Nota)
+
+# CUANTIL #
+
+quantile(datos$Nota,probs=c(0.25,0.75))
+
+# MEDIA #
+
+mean(datos$Nota)
+
+# MEDIANA # 
+
+median(datos$Nota)
+
+#11 Calcular la estatura media de los estudiantes y proporcionar, al menos, dos
+# medidas que indiquen la dispersión de esta variable.
+
+mean(datos$Estatura, na.rm = TRUE)
+var(datos$Estatura, na.rm = TRUE)
+IQR(datos$Estatura, na.rm = TRUE)
+
+#12 ¿Qué variable es más homogénea: la 'Edad' o la 'Estatura'? Para determinar 
+# la homogeneidad de una variable, esto es, la representatividad de su media, se
+# calcula el Coeficiente de Variación de Pearson definido como el cociente entre
+# la desviación típica y la media de la variable.
+#           ????????(????)
+#????????(????) = ---------
+#           ????(????)
+
+# EDAD #
+
+CV_edad<-sd(datos$Edad)/mean(datos$Edad)
+CV_edad
+
+# ESTATURA #
+
+CV_estatura<-sd(datos$Estatura,na.rm=TRUE)/mean(datos$Estatura,na.rm=TRUE)
+CV_estatura
+
+#13 Obtener la asimetría y curtosis de las variables. ¿Puede asegurarse 
+# variables siguen una distribución normal? ¿Y la variable multivariante?
+
+library(moments)
+
+# EDAD #
+
+asimetria_edad <- skewness(datos$Edad,na.rm=TRUE)
+asimetria_edad
+curtosis_edad <- kurtosis(datos$Edad,na.rm=TRUE)
+curtosis_edad
+plot(density(datos$Edad))
+
+# ESTATURA #
+
+asimetria_estatura <- skewness(datos$Estatura,na.rm=TRUE)
+asimetria_estatura
+curtosis_estatura <- kurtosis(datos$Estatura,na.rm=TRUE)
+curtosis_estatura
+plot(density(datos$Estatura, na.rm = TRUE))
+
+# NOTA #
+
+asimetria_nota <- skewness(datos$Nota,na.rm=TRUE)
+asimetria_nota
+curtosis_nota <- kurtosis(datos$Nota,na.rm=TRUE)
+curtosis_nota
+plot(density(datos$Nota, na.rm = TRUE))
+
+#14 ¿Existe alguna correlación entre la edad y la estatura? ¿Y entre el sexo y 
+# la nota?
+
+d1 <- na.omit(datos)
+cor(d1[,2:4])
+pairs(d1[,2:4])
+
+#15 Crea dos dataframes, uno formado sólo por mujeres cuya nota sea superior o
+# igual a 5 y otro formado sólo por hombres con el mismo criterio.
+
+# MUJERRES #
+
+aprobados_mujeres <- subset(datos,Genero=="Mujer" & Nota>=5)
+aprobados_mujeres
+
+# HOMBRES #
+
+aprobado_hombres <- subset(datos,Genero=="Hombre" & Nota>=5)
+aprobado_hombres
+
+#16 Calcular la nota media por género empleando la función tapply().
+
+tapply(datos$Nota,datos$Genero,mean)
+
+#17 ¿Existe algún atípico multivariante? Represéntalos en 3D.
+
+library(robustbase)
+library(scatterplot3d)
+scatterplot3d(datos)
+d <- na.omit(datos[,2:4])
+rownames(d) <- NULL
+a <- covMcd(d)
+at <- as.factor(a$mcd.wt)
+colors <- c("red","purple")
+colors <- colors[as.numeric(at)]
+grid()
+scatterplot3d(d,pch=16,type="h",color=colors)
+
+
+
