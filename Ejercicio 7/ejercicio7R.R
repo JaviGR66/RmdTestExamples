@@ -1,0 +1,62 @@
+library(cluster)
+library(stats)
+library(ggplot2)
+
+csv_data <- read.csv2("divorce_data.csv")
+summary(csv_data)
+
+csv_data$DIVYEAR<-ifelse(csv_data$DIVYEAR==89, 0, 1)
+table(csv_data$livewithmom)
+
+csv_data[csv_data$livewithmom==9, ]
+
+# Cluster con distribución normal
+normal_dist <- scale(csv_data)
+cluster <- hclust(dist(normal_dist))
+cluster
+
+# Año en el que se divorciaron (columna como label)
+plot(cluster,hang=-1,cex=.5,labels=csv_data$DIVYEAR)
+rect.hclust(cluster,k=3)
+
+# Relaccion con la madre (columna como label)
+plot(cluster,hang=-1,cex=.5,labels=csv_data$momint, main = "Relaccion con la Madre")
+rect.hclust(cluster,k=3)
+
+# Cercania con la madre (columna como label)
+plot(cluster,hang=-1,cex=.5,labels=csv_data$momclose,main = "Cercania con la Madre")
+rect.hclust(cluster,k=3)
+
+# Relaccion con la padre (columna como label)
+plot(cluster,hang=-1,cex=.5,labels=csv_data$dadint,main = "Relaccion con el Padre")
+rect.hclust(cluster,k=3)
+
+# Con quien vive (columna como label)
+plot(cluster,hang=-1,cex=.5,labels=csv_data$livewith, main = "Tipos de Cohabitacion")
+rect.hclust(cluster,k=3)
+
+# Sentimiento de depresion (columna como label)
+plot(cluster,hang=-1,cex=.5,labels=csv_data$depression, main = "Sentimiento de Depresion")
+rect.hclust(cluster,k=3)
+
+# Plan de matrimonio(columna como label)
+plot(cluster,hang=-1,cex=.5,labels=csv_data$gethitched, main = "Plan de Matrimonio")
+rect.hclust(cluster,k=3)
+
+distribucion <- as.data.frame(lapply(csv_data,scale))
+str(distribucion)
+
+# Creacion de semilla
+set.seed(321)
+
+# Distribution Cluster
+cluster_dist <- kmeans(distribucion[,colSums(is.na(distribucion))==0],3)
+cluster_dist$size
+cluster_dist$centers
+
+# Creamos el grafico
+par(mfrow=c(1, 1), mar=c(4, 4, 4, 2))
+myColors <- c("blue", "red", "green", "orange", "gray", "violet", "yellow")
+barplot(t(cluster_dist$centers), beside = TRUE, xlab="cluster",
+        ylab="value", col = myColors)
+legend("topright", ncol=2, legend = c("DIVYEAR", "momint", "dadint", "momclose", "depression", "livewithmom", "gethitched"), fill = myColors)
